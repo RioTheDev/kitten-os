@@ -4,6 +4,6 @@
 @layer components {
 	@font-face {
 		font-family: consolas;
-		src: url('fonts/consolas.ttf') format('truetype');
+		src: url('/fonts/consolas.ttf') format('truetype');
 	}
 }

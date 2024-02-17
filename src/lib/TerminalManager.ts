@@ -1,5 +1,5 @@
 import type { RouteInterface } from './interfaces/routes.interface';
-
+import tinyColor from 'tinycolor2';
 export class TerminalManager {
 	fileData: RouteInterface[] = [];
 	constructor(fileData: RouteInterface[]) {
@@ -106,10 +106,16 @@ export class TerminalManager {
 		return { newLines: ['Kittens created your file :>'] };
 	}
 	color(col: string): { newLines: string[] } {
-		if (!col) {
-			return { newLines: ['Specify a color!!'] };
+		if (!col || !tinyColor(col).isValid()) {
+			return { newLines: ['Specify a valid color!!'] };
+		}
+		const inRGB = tinyColor(col).toRgb();
+		const val = 10;
+		if (inRGB.r < val && inRGB.g < val && inRGB.b < val) {
+			return { newLines: ["the color is too dark u'll hurt ur eyes :<"] };
 		}
 		localStorage.setItem('text-color', col);
+
 		window.location.reload();
 		return { newLines: ['The kittens changed the color!'] };
 	}

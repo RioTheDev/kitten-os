@@ -25,7 +25,14 @@ export class TerminalManager {
 			}
 		}
 	}
-
+	async ipinfo(ip?: string): Promise<{ newLines: string[] }> {
+		if (ip && !new RegExp(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/g).test(ip)) {
+			return { newLines: ['Enter a valid IP!!'] };
+		}
+		console.log(ip);
+		const answer = await (await fetch(`https://ipinfo.io/${ip || ''}/json`)).json();
+		return { newLines: [...Object.entries(answer).map((x) => `${x[0]} - ${x[1]}`)] };
+	}
 	getCurrentDir(dir: string[]) {
 		let currentPaths: RouteInterface[] = this.fileData;
 		let currentDir = null;

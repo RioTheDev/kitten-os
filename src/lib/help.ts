@@ -9,8 +9,9 @@ export const commandHelp = [
 	'edit <name> - lets u edit the specified file',
 	'rm <name> - deletes the specified file/directory',
 	'run <name> - runs the specified file as javascript',
-	'clear - clears the console',
-	'color <color> - change the color of the text'
+	'color <color> - change the color of the text',
+	'ipinfo <ip> - get info about a specific ip (or get your ip and info by not specifying any)',
+	'clear - clears the console'
 ];
 export const helpText = [
 	'These are all the commands the kittens can help you with!',

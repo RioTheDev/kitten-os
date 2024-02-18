@@ -1,7 +1,7 @@
 import { TerminalManager, formatPath, type FileInterface } from '$lib';
 import { helpText } from './help';
 
-export function runCommand(
+export async function runCommand(
 	terminalLines: string[],
 	terminalManager: TerminalManager,
 	dir: string[],
@@ -24,6 +24,9 @@ export function runCommand(
 		}
 
 		switch (cmdName) {
+			case 'ipinfo':
+				newLines.push(...(await terminalManager.ipinfo(args[0])).newLines);
+				break;
 			case 'run':
 				newLines.push(...terminalManager.run(dir, args[0]).newLines);
 				break;

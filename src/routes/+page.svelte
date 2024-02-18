@@ -36,8 +36,8 @@
 	<CommandInput
 		bind:dir
 		{editMode}
-		runCommand={(cmd) => {
-			const { newLines, newDir, edit, editfile } = runCommand(
+		runCommand={async (cmd) => {
+			const { newLines, newDir, edit, editfile } = await runCommand(
 				terminalLines,
 				terminalManager,
 				dir,

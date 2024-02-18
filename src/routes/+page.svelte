@@ -4,9 +4,10 @@
 	import Lines from '$lib/components/Lines.svelte';
 	import { TerminalManager } from '$lib';
 	import { onMount } from 'svelte';
+	import version from '../version';
 
 	let terminalLines = [
-		'KittenOS [Version 10.0.22621.3007]',
+		`KittenOS [Version ${version}]`,
 		'(c) Purrs and Paws Corporation. All catnaps reserved.',
 		'Write "help" to get started'
 	];

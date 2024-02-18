@@ -15,13 +15,8 @@
 	let editName: string = '';
 	let terminalManager: TerminalManager;
 	onMount(() => {
-		const data = localStorage.getItem('data');
-		if (data) {
-			const localData = JSON.parse(data);
-			terminalManager = new TerminalManager(localData);
-		} else {
-			terminalManager = new TerminalManager(fileData);
-		}
+		terminalManager = new TerminalManager(terminalLines);
+		terminalLines = terminalLines;
 	});
 	let scrollDiv: HTMLDivElement;
 </script>

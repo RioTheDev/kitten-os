@@ -11,16 +11,27 @@ export function runCommand(
 ) {
 	let newLines: string[] = [];
 	const [cmdName, ...args] = cmd.split(' ');
+
 	let editmode = edit;
 	if (!editmode) {
 		terminalLines = [...terminalLines, formatPath(dir, cmd)];
 
+		for (let i = 0; i < args.length; i++) {
+			if (new RegExp(/[\\ /:?><]/g).test(args[i])) {
+				terminalLines = [...terminalLines, '/rBad syntax :<'];
+				return { newLines: terminalLines, newDir: dir, edit: editmode, editfile: editName };
+			}
+		}
+
 		switch (cmdName) {
+			case 'run':
+				newLines.push(...terminalManager.run(dir, args[0]).newLines);
+				break;
 			case 'color':
 				newLines.push(...terminalManager.color(args[0]).newLines);
 				break;
 			case 'help':
-				newLines.push(...helpText.split('\n'));
+				newLines.push(...helpText);
 				break;
 			case 'reset':
 				localStorage.clear();
@@ -75,7 +86,7 @@ export function runCommand(
 			return { newLines: terminalLines, newDir: dir, edit: false };
 		}
 		(currentDir?.paths[currentPaths.indexOf(file)] as FileInterface).data += cmd + '\n';
-		newLines.push('/f' + cmd);
+		newLines.push('/w' + cmd);
 	}
 	terminalLines = [...terminalLines, ...newLines];
 

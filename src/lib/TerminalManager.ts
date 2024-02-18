@@ -1,10 +1,31 @@
-import type { RouteInterface } from './interfaces/routes.interface';
+import { fileData } from '$lib';
+import { commandHelp } from './help';
+import type { FileInterface, RouteInterface } from './interfaces/routes.interface';
 import tinyColor from 'tinycolor2';
 export class TerminalManager {
 	fileData: RouteInterface[] = [];
-	constructor(fileData: RouteInterface[]) {
-		this.fileData = fileData;
+	constructor(terminalLines: string[]) {
+		const data = localStorage.getItem('data');
+		if (data) {
+			this.fileData = JSON.parse(data);
+		} else {
+			this.fileData = fileData;
+		}
+		const exceptions = ['getCurrentDir', 'constructor', 'verifyExists'];
+		const commands = Object.getOwnPropertyNames(TerminalManager.prototype).filter(
+			(x) => !exceptions.includes(x)
+		);
+		const documentedCmds = [];
+		for (let i = 0; i < commandHelp.length; i++) {
+			documentedCmds.push(commandHelp[i].split(' ')[0]);
+		}
+		for (let i = 0; i < commands.length; i++) {
+			if (!documentedCmds.includes(commands[i])) {
+				terminalLines.push(`/rDev: Command "${commands[i]}" Isn't documented!!`);
+			}
+		}
 	}
+
 	getCurrentDir(dir: string[]) {
 		let currentPaths: RouteInterface[] = this.fileData;
 		let currentDir = null;
@@ -21,26 +42,31 @@ export class TerminalManager {
 		}
 		return { currentPaths, currentDir };
 	}
-
+	verifyExists(dir: string[], path: string, type?: 'file' | 'folder') {
+		const { currentPaths } = this.getCurrentDir(dir);
+		const chosenPath = currentPaths.find((x) => x.route == path && (type ? x.type == type : true));
+		if (!chosenPath) {
+			return null;
+		}
+		return chosenPath;
+	}
 	ls(dir: string[]): { newLines: string[] } {
 		const { currentPaths } = this.getCurrentDir(dir);
 		const lines = [];
 		for (let i = 0; i < currentPaths.length; i++) {
 			if (currentPaths[i].type == 'folder') {
-				lines.push('/d' + currentPaths[i].route);
+				lines.push('/b' + currentPaths[i].route);
 				continue;
 			}
-			lines.push('/f' + currentPaths[i].route);
+			lines.push('/w' + currentPaths[i].route);
 		}
 		return { newLines: lines };
 	}
-
 	cd(dir: string[], folder: string): { newLines: string[]; dir: string[] } {
 		if (folder == '..' && dir.length > 1) {
 			return { dir: dir.slice(0, dir.length - 1), newLines: [] };
 		}
-		const { currentPaths } = this.getCurrentDir(dir);
-		const chosenFolder = currentPaths.find((x) => x.route == folder && x.type == 'folder');
+		const chosenFolder = this.verifyExists(dir, folder, 'folder');
 
 		if (chosenFolder) {
 			return { dir: [...dir, chosenFolder.route], newLines: [] };
@@ -50,20 +76,19 @@ export class TerminalManager {
 	}
 
 	cat(dir: string[], file: string): { newLines: string[] } {
-		const { currentPaths } = this.getCurrentDir(dir);
-		const chosenFile = currentPaths.find((x) => x.route == file && x.type == 'file');
-		if (!chosenFile || chosenFile.type == 'folder') {
+		const chosenFile = this.verifyExists(dir, file, 'file') as FileInterface;
+		if (!chosenFile) {
 			return { newLines: ["Kittens couldn't find this file :<"] };
 		}
-
-		return { newLines: chosenFile.data.split('\n').map((x) => '/f' + x) };
+		console.log(chosenFile);
+		return { newLines: chosenFile.data.split('\n').map((x) => '/w' + x) };
 	}
 	mkdir(dir: string[], folder: string): { newLines: string[] } {
 		if (!folder || !folder.trim()) {
 			return { newLines: ["The name format isn't good enough for the kittens :<"] };
 		}
 		const { currentPaths } = this.getCurrentDir(dir);
-		const chosenFolder = currentPaths.find((x) => x.route == folder && x.type == 'folder');
+		const chosenFolder = this.verifyExists(dir, folder);
 		if (chosenFolder) {
 			return { newLines: ['This path already exists meow :<'] };
 		}
@@ -75,16 +100,15 @@ export class TerminalManager {
 		if (currentDir) {
 			if (path == '*') {
 				currentDir.paths = [];
-				return { newLines: ['Kittens deleted every file in the folder.', 'Scary'] };
+				return { newLines: ['Kittens deleted every file/folder in the folder.', 'Scary'] };
 			}
 			currentDir.paths = currentPaths.filter((x) => x.route != path);
 		}
 		return { newLines: ['Kittens deleted the file :>'] };
 	}
 	edit(dir: string[], file: string): { newLines: string[]; edit: boolean } {
-		const { currentPaths } = this.getCurrentDir(dir);
-		const chosenFile = currentPaths.find((x) => x.route == file && x.type == 'file');
-		if (!chosenFile || chosenFile.type == 'folder') {
+		const chosenFile = this.verifyExists(dir, file, 'file');
+		if (!chosenFile) {
 			return { newLines: ["Kittens couldn't find this file :<"], edit: false };
 		}
 
@@ -98,7 +122,7 @@ export class TerminalManager {
 			return { newLines: ["The name format isn't good enough for the kittens :<"] };
 		}
 		const { currentPaths } = this.getCurrentDir(dir);
-		const chosenFile = currentPaths.find((x) => x.route == file && x.type == 'file');
+		const chosenFile = this.verifyExists(dir, file, 'file');
 		if (chosenFile) {
 			return { newLines: ['This file already exists meow :<'] };
 		}
@@ -118,5 +142,20 @@ export class TerminalManager {
 
 		window.location.reload();
 		return { newLines: ['The kittens changed the color!'] };
+	}
+	run(dir: string[], file: string): { newLines: string[] } {
+		const fileData = this.verifyExists(dir, file, 'file') as FileInterface;
+		if (!fileData) {
+			return { newLines: ["Kittens couldn't find this file!"] };
+		}
+
+		try {
+			eval(fileData.data);
+			return { newLines: ['Kittens executed the file!'] };
+		} catch (error) {
+			return { newLines: ['/r' + (error as any).toString()] };
+		}
+
+		return { newLines: [] };
 	}
 }

@@ -5,12 +5,11 @@
 {#each terminalLines as line}
 	<p
 		class="inline-block"
-		class:text-blue-500={line.startsWith('/d')}
-		class:text-white={line.startsWith('/f')}
+		class:text-blue-500={line.startsWith('/b')}
+		class:text-white={line.startsWith('/w')}
+		class:text-red-600={line.startsWith('/r')}
 		class:pl-5={line.startsWith('/t')}
 	>
-		{new RegExp(/\/(f|d)/g).test(line)
-			? line.replace(/\/(f|d)/g, '').replace('/t', '')
-			: line.replace('/t', '')}
+		{line.replace(/^\/(r|w|b|t)/g, '')}
 	</p>
 {/each}

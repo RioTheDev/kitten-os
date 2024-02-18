@@ -15,9 +15,9 @@
 	}
 </script>
 
-<div class="flex max-w-[100vw]">
+<div class="flex max-w-[100vw] w-full">
 	<p class:hidden={editMode}>{formatPath(dir)}</p>
-	<form on:submit={submit}>
+	<form on:submit={submit} class="flex-grow">
 		<!-- svelte-ignore a11y-autofocus -->
 		<input
 			type="text"
@@ -28,7 +28,7 @@
 			bind:value={currentCmd}
 			on:blur={autoFocus}
 			class:text-white={editMode}
-			class="bg-transparent outline-none"
+			class="bg-transparent outline-none w-full"
 		/>
 	</form>
 </div>
